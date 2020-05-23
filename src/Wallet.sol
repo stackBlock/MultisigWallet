@@ -12,6 +12,7 @@ contract Wallet {
         bool sent;
     }
     Transfer[] public transfers;    // only returns a single instance of the array Transfer[] / we need getTransfers()
+    mapping(address => mapping(uint => bool)) public approvals;
 
     contructor(address[] memory _approvers, uint _quorum) public {
         approvers = _approvers;
@@ -34,5 +35,20 @@ contract Wallet {
             0,
             false
         ));
+    }
+
+    function approveTransfer(uint amount, address payable to) external {
+        require(transfers[id].sent == false, 'transfer has already been sent');
+        require(approvals[msg.sender][id] == false, 'cannot approve transfer twice');
+
+        approvals[msg.sender][id] = true;
+        transfers[id].approvals++;
+
+        if(transfers[id].approvals >= quorum) {
+            transfers[id].sent = true;
+            address payable to = transfers[id].to;
+            uint amount = transfers[id].amount;
+            to.transfer(amount);                    // transfer is a solidity method in -> (to.transfer(amount))
+        }
     }
 }
