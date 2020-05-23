@@ -27,7 +27,7 @@ contract Wallet {
         return transfers;
     }
 
-    function createTransfer(uint amount, address payable to) external {
+    function createTransfer(uint amount, address payable to) external onlyApprover() {
         transfers.push(Transfer(
             transfers.length,
             amount,
@@ -37,7 +37,7 @@ contract Wallet {
         ));
     }
 
-    function approveTransfer(uint amount, address payable to) external {
+    function approveTransfer(uint amount, address payable to) external onlyApprover() {
         require(transfers[id].sent == false, 'transfer has already been sent');
         require(approvals[msg.sender][id] == false, 'cannot approve transfer twice');
 
@@ -50,5 +50,18 @@ contract Wallet {
             uint amount = transfers[id].amount;
             to.transfer(amount);                    // transfer is a solidity method in -> (to.transfer(amount))
         }
+    }
+
+    receive() external payable {}
+
+    modifier onlyApprover() {
+        bool allowed = false;
+        for(uint i = 0; i < approvers.length; i++) {
+            if(approvers[i] == msg.sender) {
+                allowed = true;
+            }
+        }
+        require(allowed == true, 'only approved allowed');
+        _;
     }
 }
