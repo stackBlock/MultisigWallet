@@ -1,0 +1,2 @@
+# MultisigWallet
+simple multisig wallet
